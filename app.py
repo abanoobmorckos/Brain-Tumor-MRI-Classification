@@ -42,3 +42,6 @@ st.warning(
     "⚠️ Disclaimer: This application is for research and educational purposes only. "
     "It is not intended for clinical diagnosis."
 )
+
+import tensorflow as tf
+import numpy as np
