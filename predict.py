@@ -2,64 +2,28 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 
-# =========================
-# Model Path
-# =========================
-MODEL_PATH = "models\MobileNetV2_STREAMLIT.keras"
+# اسم الموديل و مكانه
+MODEL_PATH = "models\MobileNetV2_CLEAN.keras"
+model = tf.keras.models.load_model(MODEL_PATH)
 
-# =========================
-# Load Model (SAFE WAY)
-# =========================
-model = tf.keras.models.load_model(
-    MODEL_PATH,
-    compile=False
-)
+# أسماء الكلاسات
+CLASS_NAMES = ["Glioma", "Meningioma", "Pituitary", "No Tumor"]
 
-# =========================
-# Class Names (عدّلهم حسب داتاستك)
-# =========================
-CLASS_NAMES = [
-    "Glioma",
-    "Meningioma",
-    "No Tumor",
-    "Pituitary"
-]
+# دالة لتحويل الصورة وتحضيرها للموديل
+def preprocess_image(uploaded_file):
+    image = Image.open(uploaded_file).convert("RGB")
+    image = image.resize((224, 224))  # حسب input_shape للموديل
+    image_array = np.array(image) / 255.0
+    image_array = np.expand_dims(image_array, axis=0)
+    return image_array
 
-# =========================
-# Image Preprocessing
-# =========================
-IMG_SIZE = 224
+# دالة التنبؤ
+def predict_image(uploaded_file):
+    image = preprocess_image(uploaded_file)
+    prediction = model.predict(image)
+    predicted_class_index = np.argmax(prediction)
+    confidence = np.max(prediction) * 100
+    predicted_class_name = CLASS_NAMES[predicted_class_index]
+    return predicted_class_name, confidence
 
-def preprocess_image(image: Image.Image):
-    """
-    Preprocess image for MobileNetV2
-    """
-    image = image.convert("RGB")
-    image = image.resize((IMG_SIZE, IMG_SIZE))
-
-    img_array = np.array(image)
-    img_array = img_array / 255.0  # normalization
-
-    img_array = np.expand_dims(img_array, axis=0)
-    return img_array
-
-
-# =========================
-# Prediction Function
-# =========================
-def predict_image(image: Image.Image):
-    """
-    Returns:
-        predicted_class (str)
-        confidence (float)
-    """
-    processed_image = preprocess_image(image)
-
-    preds = model.predict(processed_image)
-    class_index = np.argmax(preds)
-    confidence = float(preds[0][class_index])
-
-    predicted_class = CLASS_NAMES[class_index]
-
-    return predicted_class, confidence
 
