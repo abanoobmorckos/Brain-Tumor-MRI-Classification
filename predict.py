@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 
 # اسم الموديل و مكانه
-MODEL_PATH = "models\MobileNetV2_CLEAN.keras"
+MODEL_PATH = "models\MobileNetV2_STREAMLIT.keras"
 model = tf.keras.models.load_model(MODEL_PATH)
 
 # أسماء الكلاسات
@@ -25,5 +25,6 @@ def predict_image(uploaded_file):
     confidence = np.max(prediction) * 100
     predicted_class_name = CLASS_NAMES[predicted_class_index]
     return predicted_class_name, confidence
+
 
 
