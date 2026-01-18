@@ -2,48 +2,63 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 
-# =====================
+# =========================
 # Model Path
-# =====================
-MODEL_PATH = "models/MobileNetV2_CLEAN.keras"
+# =========================
+MODEL_PATH = "MobileNetV2_STREAMLIT.keras"
 
-# =====================
-# Load Model (مرة واحدة)
-# =====================
-model = tf.keras.models.load_model(MODEL_PATH)
+# =========================
+# Load Model (SAFE WAY)
+# =========================
+model = tf.keras.models.load_model(
+    MODEL_PATH,
+    compile=False
+)
 
-# =====================
-# Class Names (لازم نفس ترتيب التدريب)
-# =====================
-class_names = [
+# =========================
+# Class Names (عدّلهم حسب داتاستك)
+# =========================
+CLASS_NAMES = [
     "Glioma",
     "Meningioma",
     "No Tumor",
     "Pituitary"
 ]
 
-# =====================
+# =========================
+# Image Preprocessing
+# =========================
+IMG_SIZE = 224
+
+def preprocess_image(image: Image.Image):
+    """
+    Preprocess image for MobileNetV2
+    """
+    image = image.convert("RGB")
+    image = image.resize((IMG_SIZE, IMG_SIZE))
+
+    img_array = np.array(image)
+    img_array = img_array / 255.0  # normalization
+
+    img_array = np.expand_dims(img_array, axis=0)
+    return img_array
+
+
+# =========================
 # Prediction Function
-# =====================
-def predict_image(image_file):
-    # فتح الصورة
-    image = Image.open(image_file).convert("RGB")
+# =========================
+def predict_image(image: Image.Image):
+    """
+    Returns:
+        predicted_class (str)
+        confidence (float)
+    """
+    processed_image = preprocess_image(image)
 
-    # Resize (MobileNetV2 input)
-    image = image.resize((224, 224))
+    preds = model.predict(processed_image)
+    class_index = np.argmax(preds)
+    confidence = float(preds[0][class_index])
 
-    # تحويل لـ numpy
-    image = np.array(image) / 255.0
+    predicted_class = CLASS_NAMES[class_index]
 
-    # إضافة batch dimension
-    image = np.expand_dims(image, axis=0)
-
-    # Predict
-    predictions = model.predict(image)
-
-    # استخراج النتيجة
-    predicted_index = np.argmax(predictions)
-    predicted_label = class_names[predicted_index]
-    confidence = float(np.max(predictions) * 100)
-
-    return predicted_label, confidence
+    return predicted_class, confidence
