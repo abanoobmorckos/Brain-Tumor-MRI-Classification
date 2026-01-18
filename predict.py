@@ -5,7 +5,7 @@ from PIL import Image
 # =========================
 # Model Path
 # =========================
-MODEL_PATH = "MobileNetV2_STREAMLIT.keras"
+MODEL_PATH = "models\MobileNetV2_STREAMLIT.keras"
 
 # =========================
 # Load Model (SAFE WAY)
@@ -62,3 +62,4 @@ def predict_image(image: Image.Image):
     predicted_class = CLASS_NAMES[class_index]
 
     return predicted_class, confidence
+
